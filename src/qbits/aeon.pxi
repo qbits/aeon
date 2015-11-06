@@ -43,6 +43,7 @@
   (second [t])
   (week-day [t])
   (year-day [t])
+  (epoch [t])
   (add-interval [t])
   (format [t fmt]))
 
@@ -72,6 +73,8 @@
 
   (year-day [t]
     (:tm_yday struct-tm))
+
+  (epoch [t] (mktime struct-tm))
 
   (add-interval [this y m d h m s]
     (let [nd (-copy this)
@@ -115,7 +118,7 @@
   (-eq [this other]
     (= 0
        (difftime (mktime (get-field this :struct-tm))
-                 (mktime (get-field this :struct-tm)))))
+                 (mktime (get-field other :struct-tm)))))
 
   (-hash [this]
     (hash (mktime struct-tm)))
@@ -125,7 +128,6 @@
 
   (-repr [this]
     (str "<qbits.aeon/DateTime \"" (format this "%Y-%m-%d %H:%M:%S") "\">")))
-
 
 (defn new-datetime
   ([{:as opts
@@ -139,13 +141,19 @@
               tm))))
   ([] (new-datetime nil)))
 
+;; (defn
+;;   ""
+;;   []
+;;   )
+
+
 ;; (let [d1 (new-datetime)
 ;;       d0 (-copy d1)
 ;;       d2 (-copy d1)]
-;;   (println d1)
+;;   ;; (println (epoch d1))
 ;;   ;; (println (format d1 "%Y-%m-%d %H:%M:%S"))
-;;   ;; (println (add-interval d1 1 1 1))
-;;   ;; (println d1)
+;;   ;; (println )
+;;   ;; (println (= d1 (add-interval d1 1 1 1 0 0 0 )))
 ;;   ;; (println d2)
 
 ;;   ;; (println d1)
