@@ -1,6 +1,5 @@
 (ns qbits.aeon
   (:require
-   [pixie.uv :as uv]
    [pixie.ffi]
    [pixie.ffi-infer :as f]))
 
