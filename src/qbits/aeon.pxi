@@ -127,7 +127,7 @@
     (str (-repr this)))
 
   (-repr [this]
-    (str "<qbits.aeon/DateTime \"" (format this "%Y-%m-%d %H:%M:%S") "\">")))
+    (str "<qbits.aeon.DateTime \"" (format this "%Y-%m-%d %H:%M:%S") "\">")))
 
 (defn new-datetime
   ([{:as opts
