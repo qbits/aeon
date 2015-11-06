@@ -124,7 +124,7 @@
     (hash (mktime struct-tm)))
 
   (-str [this]
-    (str (-repr this)))
+    (-repr this))
 
   (-repr [this]
     (str "<qbits.aeon.DateTime \"" (format this "%Y-%m-%d %H:%M:%S") "\">")))
