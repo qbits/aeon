@@ -74,7 +74,7 @@
   (year-day [t]
     (:tm_yday struct-tm))
 
-  (datetime->epoch [t] (mktime struct-tm))
+  (epoch [t] (mktime struct-tm))
 
   (add-interval [this y m d h m s]
     (let [nd (-copy this)
