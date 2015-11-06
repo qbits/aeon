@@ -89,7 +89,7 @@
       nd))
 
   (format [this fmt]
-    (let [buf (buffer 80)]
+    (let [buf (buffer default-format-buffer-size)]
       (->> (strftime buf default-format-buffer-size fmt struct-tm)
            (set-buffer-count! buf))
       (let [s (transduce (map char) string-builder buf)]
@@ -116,9 +116,9 @@
 
   IObject
   (-eq [this other]
-    (= 0
-       (difftime (mktime (get-field this :struct-tm))
-                 (mktime (get-field other :struct-tm)))))
+    (zero?
+     (difftime (mktime (get-field this :struct-tm))
+               (mktime (get-field other :struct-tm)))))
 
   (-hash [this]
     (hash (mktime struct-tm)))
