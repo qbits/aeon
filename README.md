@@ -10,7 +10,7 @@ Work in progress.
 <!-- your project.edn `:dependencies`: -->
 
 <!-- ```clojure -->
-<!-- [mpenet/aeon "0.1.1-alpha"] -->
+<!-- [qbits/aeon "0.1.1-alpha"] -->
 <!-- ``` -->
 
 ## Copying
