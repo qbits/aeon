@@ -163,7 +163,7 @@
                            (gmtime tt)
                            (localtime tt))
                          tm))]
-     ;; (dispose! tt)
+     (dispose! tt)
      dt))
   ([] (new-datetime nil)))
 
@@ -173,33 +173,5 @@
     (time tt)
     (pixie.ffi/set! tt :val i)
     (let [dt (->DateTime (pixie.ffi/cast (gmtime tt) tm))]
-      ;; (dispose! tt)
+      (dispose! tt)
       dt)))
-
-;; (println (epoch->datetime 0))
-;; (println (epoch->datetime 0))
-;; (println (epoch->datetime 10))
-;; (println (epoch->datetime 1446818738))
-
-
-;; (defn
-;;   ""
-;;   []
-;;   )
-
-
-;; (let [d1 (new-datetime)
-;;       d0 (-copy d1)
-;;       d2 (-copy d1)]
-;;   (println (epoch d1))
-;;   (println (format d1 "%Y-%m-%d %H:%M:%S"))
-;;   (println )
-;;   (println (= d1 (add-interval d1 1 1 1 0 0 0 )))
-;;   (println d2)
-
-;;   (println d1)
-;;   ;; (println (add-interval d1 1 1 1))
-;;   (println d1)
-;;   (println d2)
-;;   (println (-hash d2) (-hash d1))
-;; )
