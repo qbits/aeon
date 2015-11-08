@@ -1,6 +1,6 @@
 # Aeon
 
-A tiny DateTime library for Pixie.
+A tiny immutable DateTime library using C FFI for Pixie.
 
 Work in progress.
 
