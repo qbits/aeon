@@ -33,19 +33,21 @@
 (def default-format-buffer-size 80)
 
 (defprotocol IDateTime
-  (-copy [t])
-  (ts [t])
-  (year [t])
-  (month [t])
-  (day [t])
-  (hour [t])
-  (minute [t])
-  (second [t])
-  (week-day [t])
-  (year-day [t])
-  (epoch [t])
-  (add-interval [t])
-  (format [t fmt]))
+  (-copy [this])
+  (ts [this])
+  (year [this])
+  (month [this])
+  (day [this])
+  (hour [this])
+  (minute [this])
+  (second [this])
+  (week-day [this])
+  (year-day [this])
+  (epoch [this])
+  (add-interval [this])
+  (add [this x unit])
+  (diff [this other])
+  (format [this fmt]))
 
 (deftype DateTime [struct-tm]
 
@@ -76,15 +78,39 @@
 
   (epoch [t] (mktime struct-tm))
 
-  (add-interval [this y m d h m s]
+  (diff [this other]
+    (difftime (mktime (get-field this :struct-tm))
+              (mktime (get-field other :struct-tm))))
+
+  (add-interval [this years months days hours minutes seconds]
     (let [nd (-copy this)
           nd-struct-tm (get-field nd :struct-tm)]
-      (pixie.ffi/set! nd-struct-tm :tm_year (+ (:tm_year struct-tm) y))
-      (pixie.ffi/set! nd-struct-tm :tm_mon (+ (:tm_mon struct-tm) m))
-      (pixie.ffi/set! nd-struct-tm :tm_mday (+ (:tm_mday struct-tm) d))
-      (pixie.ffi/set! nd-struct-tm :tm_hour (+ (:tm_hour struct-tm) h))
-      (pixie.ffi/set! nd-struct-tm :tm_min (+ (:tm_min struct-tm) m))
-      (pixie.ffi/set! nd-struct-tm :tm_sec (+ (:tm_sec struct-tm) s))
+      (pixie.ffi/set! nd-struct-tm :tm_year (+ (:tm_year struct-tm) years))
+      (pixie.ffi/set! nd-struct-tm :tm_mon (+ (:tm_mon struct-tm) months))
+      (pixie.ffi/set! nd-struct-tm :tm_mday (+ (:tm_mday struct-tm) days))
+      (pixie.ffi/set! nd-struct-tm :tm_hour (+ (:tm_hour struct-tm) hours))
+      (pixie.ffi/set! nd-struct-tm :tm_min (+ (:tm_min struct-tm) minutes))
+      (pixie.ffi/set! nd-struct-tm :tm_sec (+ (:tm_sec struct-tm) seconds))
+      (mktime nd-struct-tm)
+      nd))
+
+  (add [this unit x]
+    (let [k (keyword (str "tm" unit))
+          nd (-copy this)
+          nd-struct-tm (get-field nd :struct-tm)]
+      (case unit
+        :years
+        (pixie.ffi/set! nd-struct-tm :tm_year (+ (:tm_year struct-tm) x))
+        :months
+        (pixie.ffi/set! nd-struct-tm :tm_mon (+ (:tm_mon struct-tm) x))
+        :days
+        (pixie.ffi/set! nd-struct-tm :tm_mday (+ (:tm_mday struct-tm) x))
+        :hours
+        (pixie.ffi/set! nd-struct-tm :tm_hour (+ (:tm_hour struct-tm) x))
+        :minutes
+        (pixie.ffi/set! nd-struct-tm :tm_min (+ (:tm_min struct-tm) x))
+        :seconds
+        (pixie.ffi/set! nd-struct-tm :tm_sec (+ (:tm_sec struct-tm) x)))
       (mktime nd-struct-tm)
       nd))
 
@@ -116,9 +142,7 @@
 
   IObject
   (-eq [this other]
-    (zero?
-     (difftime (mktime (get-field this :struct-tm))
-               (mktime (get-field other :struct-tm)))))
+    (zero? (diff this other)))
 
   (-hash [this]
     (hash (mktime struct-tm)))

@@ -1,3 +1,4 @@
 {:name cc.qbits/aeon
  :version "0.1.1-alpha"
- :description "Just in Time"}
+ :description "Just in Time"
+ :source-paths ["src"]}
