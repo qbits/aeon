@@ -18,8 +18,8 @@
 
 (t/deftest test-format
   (let [d1 (datetime test-epoch)]
-    (t/assert= "2010-01-02 04:04:05"
-               (format d1 "%Y-%m-%d %H:%M:%S"))))
+    (t/assert= "2010-01-02 04:04:05 +0100"
+               (format d1 "%Y-%m-%d %H:%M:%S %z"))))
 
 (t/deftest test-eq
   (let [d1 (datetime test-epoch)

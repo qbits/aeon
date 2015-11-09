@@ -4,6 +4,8 @@
    [pixie.ffi]
    [pixie.ffi-infer :as f]))
 
+;; support tm->tm_gmtoff ?
+
 (def default-format-buffer-size 80)
 
 (defprotocol IDateTime
@@ -124,7 +126,8 @@
     (-repr this))
 
   (-repr [this]
-    (str "<qbits.aeon.DateTime \"" (str (format this "%Y-%m-%d %H:%M:%S")) "\">")))
+    (str "<qbits.aeon.DateTime \"" (str (format this "%Y-%m-%d %H:%M:%S %z
+")) "\">")))
 
 (defn datetime
   ([i]
@@ -136,4 +139,5 @@
                                           c/tm))]
        (dispose! tt)
        dt)))
-  ([] (datetime nil)))
+  ([]
+   (datetime nil)))
