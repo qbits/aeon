@@ -21,7 +21,6 @@
   (add-interval [this])
   (add [this x unit])
   (diff [this other])
-  (gmt-offset [this])
   (format [this fmt]))
 
 (deftype DateTime [struct-tm]
