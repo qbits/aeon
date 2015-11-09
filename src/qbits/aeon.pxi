@@ -1,5 +1,6 @@
 (ns qbits.aeon
   (:require
+   [qbits.aeon.ffi :as c]
    [pixie.ffi]
    [pixie.ffi-infer :as f]))
 
@@ -7,28 +8,6 @@
 ;; millisecond support
 ;; prolly leaks like crazy
 ;; tests!
-
-(f/with-config {:library "c"
-                :cxx-flags ["-lc"]
-                :includes ["time.h"]}
-  (def time_t (pixie.ffi/c-struct :time_t 8 [[:val CInt 0]]))
-  (f/defcfn time)
-  (f/defcfn gmtime)
-  (f/defcfn mktime)
-  (f/defcfn strftime)
-  (f/defcfn localtime)
-  (f/defcfn asctime)
-  (f/defcfn difftime)
-  (f/defcstruct tm [:tm_sec
-                    :tm_min
-                    :tm_hour
-                    :tm_mday
-                    :tm_mon
-                    :tm_year
-                    :tm_wday
-                    :tm_yday
-                    :tm_isdst]))
-
 
 (def default-format-buffer-size 80)
 
@@ -52,35 +31,36 @@
 (deftype DateTime [struct-tm]
 
   IDateTime
-  (year [t]
+  (year [this]
     (+ 1900 (:tm_year struct-tm)))
 
-  (month [t]
+  (month [this]
     (:tm_mon struct-tm))
 
-  (day [t]
+  (day [this]
     (:tm_mday struct-tm))
 
-  (hour [t]
+  (hour [this]
     (:tm_hour struct-tm))
 
-  (minute [t]
+  (minute [this]
     (:tm_min struct-tm))
 
-  (second [t]
+  (second [this]
     (:tm_sec struct-tm))
 
-  (week-day [t]
+  (week-day [this]
     (:tm_wday struct-tm))
 
-  (year-day [t]
+  (year-day [this]
     (:tm_yday struct-tm))
 
-  (epoch [t] (mktime struct-tm))
+  (epoch [this]
+    (c/mktime struct-tm))
 
   (diff [this other]
-    (difftime (mktime (get-field this :struct-tm))
-              (mktime (get-field other :struct-tm))))
+    (- (epoch this)
+       (epoch other)))
 
   (add-interval [this years months days hours minutes seconds]
     (let [nd (-copy this)
@@ -91,12 +71,11 @@
       (pixie.ffi/set! nd-struct-tm :tm_hour (+ (:tm_hour struct-tm) hours))
       (pixie.ffi/set! nd-struct-tm :tm_min (+ (:tm_min struct-tm) minutes))
       (pixie.ffi/set! nd-struct-tm :tm_sec (+ (:tm_sec struct-tm) seconds))
-      (mktime nd-struct-tm)
+      (c/mktime nd-struct-tm)
       nd))
 
   (add [this unit x]
-    (let [k (keyword (str "tm" unit))
-          nd (-copy this)
+    (let [nd (-copy this)
           nd-struct-tm (get-field nd :struct-tm)]
       (case unit
         :years
@@ -111,20 +90,19 @@
         (pixie.ffi/set! nd-struct-tm :tm_min (+ (:tm_min struct-tm) x))
         :seconds
         (pixie.ffi/set! nd-struct-tm :tm_sec (+ (:tm_sec struct-tm) x)))
-      (mktime nd-struct-tm)
+      (c/mktime nd-struct-tm)
       nd))
 
   (format [this fmt]
     (let [buf (buffer default-format-buffer-size)]
-      (->> (strftime buf default-format-buffer-size fmt struct-tm)
+      (->> (c/strftime buf default-format-buffer-size fmt struct-tm)
            (set-buffer-count! buf))
       (let [s (transduce (map char) string-builder buf)]
         (dispose! buf)
         s)))
 
   (-copy [this]
-    ;; where is memcpy
-    (let [nt (tm)]
+    (let [nt (c/tm)]
       (pixie.ffi/set! nt :tm_sec (:tm_sec struct-tm))
       (pixie.ffi/set! nt :tm_min (:tm_min struct-tm))
       (pixie.ffi/set! nt :tm_hour (:tm_hour struct-tm))
@@ -145,33 +123,22 @@
     (zero? (diff this other)))
 
   (-hash [this]
-    (hash (mktime struct-tm)))
+    (hash (epochal struct-tm)))
 
   (-str [this]
     (-repr this))
 
   (-repr [this]
-    (str "<qbits.aeon.DateTime \"" (format this "%Y-%m-%d %H:%M:%S") "\">")))
+    (str "<qbits.aeon.DateTime \"" (str (format this "%Y-%m-%d %H:%M:%S")) "\">")))
 
-(defn new-datetime
-  ([{:as opts
-     :keys [gmt?]}]
-   (let [tt (time_t)
-         _ (time tt)
-         dt (->DateTime (pixie.ffi/cast
-                         (if gmt?
-                           (gmtime tt)
-                           (localtime tt))
-                         tm))]
-     (dispose! tt)
-     dt))
-  ([] (new-datetime nil)))
-
-(defn epoch->datetime
-  [i]
-  (let [tt (time_t)]
-    (time tt)
-    (pixie.ffi/set! tt :val i)
-    (let [dt (->DateTime (pixie.ffi/cast (gmtime tt) tm))]
-      (dispose! tt)
-      dt)))
+(defn datetime
+  ([i]
+   (let [tt (c/time_t)]
+     (if (number? i)
+       (pixie.ffi/set! tt :val i)
+       (c/time tt))
+     (let [dt (->DateTime (pixie.ffi/cast (c/localtime tt)
+                                          c/tm))]
+       (dispose! tt)
+       dt)))
+  ([] (datetime nil)))
