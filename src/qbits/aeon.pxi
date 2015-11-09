@@ -4,11 +4,6 @@
    [pixie.ffi]
    [pixie.ffi-infer :as f]))
 
-;; TODO
-;; millisecond support
-;; prolly leaks like crazy
-;; tests!
-
 (def default-format-buffer-size 80)
 
 (defprotocol IDateTime
@@ -26,6 +21,7 @@
   (add-interval [this])
   (add [this x unit])
   (diff [this other])
+  (gmt-offset [this])
   (format [this fmt]))
 
 (deftype DateTime [struct-tm]
