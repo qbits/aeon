@@ -13,6 +13,10 @@ Work in progress.
 <!-- [qbits/aeon "0.1.1-alpha"] -->
 <!-- ``` -->
 
+## Usage
+
+You can check the tests for now: https://github.com/qbits/aeon/blob/master/test/qbits/aeon/test/test-datetime.pxi
+
 ## Copying
 
 Free use of this software is granted under the terms of the GNU Lesser
